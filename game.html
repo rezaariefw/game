@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mini Games</title>
+<meta name="description" content="Kumpulan mini game seru — tebak-tebakan, puzzle, dan labirin.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FAF3EA;
+    --rose:#E7B6BB;
+    --rose-dk:#C98A92;
+    --sage:#93AD8C;
+    --sage-dk:#5E7857;
+    --gold:#D9A967;
+    --ink:#4A3F3B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Nunito', sans-serif;
+    background:linear-gradient(180deg, #5FC1F0 0%, #8AD6F6 45%, #BFEAFB 100%);
+    color:var(--ink);
+    overflow-x:hidden;
+    min-height:100svh;
+    position:relative;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  input, textarea{
+    -webkit-user-select:text;
+    -moz-user-select:text;
+    user-select:text;
+  }
+  .sky-bg{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .music-fab{
+    position:fixed; top:14px; right:14px; z-index:20;
+    width:42px; height:42px; border-radius:50%;
+    background:#fff; border:3px solid var(--ink); box-shadow:0 4px 0 rgba(0,0,0,.18);
+    display:flex; align-items:center; justify-content:center; font-size:1.15rem; cursor:pointer;
+  }
+  .music-fab:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.18); }
+  .cloud{
+    position:absolute; background:#fff; opacity:.85; border-radius:50px;
+  }
+  .cloud::before, .cloud::after{ content:""; position:absolute; background:inherit; border-radius:50px; }
+  .cloud.c1{ width:100px; height:32px; top:8%; left:8%; }
+  .cloud.c1::before{ width:52px; height:52px; top:-22px; left:10px; }
+  .cloud.c1::after{ width:34px; height:34px; top:-12px; left:58px; }
+  .cloud.c2{ width:76px; height:24px; top:16%; right:10%; opacity:.7; }
+  .cloud.c2::before{ width:40px; height:40px; top:-16px; left:10px; }
+  .cloud.c3{ width:64px; height:20px; top:4%; left:55%; opacity:.6; }
+  .cloud.c3::before{ width:34px; height:34px; top:-12px; left:8px; }
+  .cloud.c4{ width:88px; height:26px; bottom:6%; left:4%; opacity:.55; }
+  .cloud.c4::before{ width:44px; height:44px; top:-18px; left:10px; }
+  img{max-width:100%; display:block;}
+  :focus-visible{outline:3px solid var(--sage-dk); outline-offset:3px;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:600; line-height:1.15;}
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:.72rem;
+    color:var(--sage-dk);
+  }
+  button{font-family:inherit; cursor:pointer;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
+
+  .btn-primary, .btn-secondary{
+    padding:12px 24px; border-radius:30px; font-weight:700; font-size:.9rem; border:none;
+  }
+  .btn-primary{ background:var(--sage-dk); color:#fff; }
+  .btn-secondary{ background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+
+  /* ---- Page shell ---- */
+  .page{ position:relative; z-index:1; max-width:560px; margin:0 auto; padding:22px 14px 60px; }
+
+  /* Menu screen: no card, tiles float directly on the sky */
+  #cpPanelBody{ min-height:200px; }
+  #cpPanelBody .eyebrow{ margin-bottom:6px; }
+  #cpPanelBody h3{ font-size:1.3rem; margin-bottom:12px; }
+  #cpPanelBody p{ font-size:.95rem; line-height:1.7; margin-bottom:10px; opacity:.85; }
+
+  /* Game screen: once a game is open (it always has a "Kembali" button), give it a white card */
+  #cpPanelBody:has(.menu-back){
+    background:#fff; border-radius:20px; padding:22px 20px; box-shadow:0 14px 32px rgba(0,40,70,.18);
+  }
+
+  .menu-banner{
+    background:#EC4899; color:#fff; text-align:center; border-radius:22px;
+    padding:16px 20px; margin-bottom:18px; box-shadow:0 8px 0 rgba(0,0,0,.12);
+  }
+  .menu-banner h1{ font-size:1.5rem; color:#fff; }
+  .menu-banner p{ font-size:.85rem; opacity:.95; margin-top:2px; }
+  .section-label{
+    color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.25); margin:16px 4px 10px;
+    font-size:.78rem;
+  }
+  .tile-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:6px;
+  }
+  .tile{
+    aspect-ratio:1/1; border-radius:26px; border:6px solid var(--tile-color, var(--sage));
+    background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding:8px; box-shadow:0 6px 0 rgba(0,0,0,.15), inset 0 0 0 3px #fff;
+    position:relative; overflow:hidden; transform:rotate(var(--tile-rot, 0deg));
+  }
+  .tile::before{
+    content:""; position:absolute; top:-35%; left:-15%; width:75%; height:65%;
+    background:radial-gradient(circle, rgba(255,255,255,.65), transparent 70%);
+    pointer-events:none;
+  }
+  .tile:active{ transform:rotate(0deg) translateY(3px); box-shadow:0 3px 0 rgba(0,0,0,.15), inset 0 0 0 3px #fff; }
+  .tile-icon-wrap{
+    width:68%; aspect-ratio:1/1; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, var(--tile-bg, #F0F0F0) 70%);
+    box-shadow:0 0 0 4px rgba(255,255,255,.9), 0 4px 8px rgba(0,0,0,.12);
+    display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
+    animation:tileBounce 2.8s ease-in-out infinite;
+    animation-delay:var(--tile-delay, 0s);
+  }
+  @keyframes tileBounce{
+    0%, 100%{ transform:translateY(0) rotate(0deg) scale(1); }
+    50%{ transform:translateY(-5px) rotate(-6deg) scale(1.05); }
+  }
+  .tile-icon{
+    font-size:2.3rem; line-height:1;
+    filter:drop-shadow(0 3px 2px rgba(0,0,0,.2));
+    text-shadow:1.5px 0 0 #fff, -1.5px 0 0 #fff, 0 1.5px 0 #fff, 0 -1.5px 0 #fff;
+  }
+  .tile-label{
+    font-size:.66rem; font-weight:800; text-align:center; line-height:1.15; color:var(--ink);
+    position:relative; z-index:1;
+  }
+  .memory-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:14px 0;
+  }
+  .mem-card{
+    position:relative; aspect-ratio:1/1; border:none; border-radius:12px; cursor:pointer;
+    background:var(--sage-dk); padding:0; perspective:600px;
+  }
+  .mem-face{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    border-radius:12px; font-size:1.6rem; backface-visibility:hidden;
+    transition:transform .35s ease;
+  }
+  .mem-back{ background:var(--sage-dk); color:#FBF2E4; font-family:'Fraunces', serif; }
+  .mem-front{ background:#FBF2E4; border:2px solid var(--ink); transform:rotateY(180deg); }
+  .mem-card.flipped .mem-back, .mem-card.matched .mem-back{ transform:rotateY(180deg); }
+  .mem-card.flipped .mem-front, .mem-card.matched .mem-front{ transform:rotateY(0); }
+  .mem-card.matched .mem-front{ opacity:.55; }
+  .acara-line{
+    background:var(--cream); border-radius:10px; padding:9px 12px; margin-bottom:8px !important;
+    font-size:.88rem !important; opacity:1 !important; animation:fadeUpSm .4s ease both;
+  }
+  @keyframes fadeUpSm{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---- Tarik Garis ---- */
+  .linematch-wrap{
+    position:relative; display:flex; justify-content:space-between;
+    padding:6px 18px; margin:12px 0; min-height:280px; touch-action:none;
+  }
+  .linematch-svg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .linematch-col{ display:flex; flex-direction:column; gap:14px; z-index:2; }
+  .linematch-node{
+    min-width:56px; height:42px; padding:0 10px; border-radius:10px; border:2px solid var(--ink);
+    background:#fff; font-size:1.15rem; font-weight:700; cursor:grab; touch-action:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .linematch-node.matched{ background:#DCF0D8; cursor:default; opacity:.85; }
+
+  .menu-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .menu-row{
+    display:flex; align-items:center; gap:14px; text-align:left; width:100%;
+    background:#fff; border:1px solid rgba(74,63,59,.1); border-radius:14px; padding:14px 16px;
+    box-shadow:0 3px 0 rgba(74,63,59,.08); cursor:pointer; font-family:inherit;
+  }
+  .menu-row:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(74,63,59,.08); }
+  .menu-ico{ font-size:1.5rem; flex-shrink:0; }
+  .menu-txt{ display:flex; flex-direction:column; }
+  .menu-title{ font-weight:800; font-size:1rem; color:var(--ink); }
+  .menu-sub{ font-size:.82rem; color:var(--ink); opacity:.65; }
+
+  .menu-back{
+    background:none; border:none; color:var(--sage-dk); font-weight:700; font-size:.85rem;
+    margin-bottom:10px; cursor:pointer; font-family:inherit; padding:0;
+  }
+
+  /* ---- Amplop & surat "Awal Mula Bertemu" ---- */
+  .envelope-btn{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    width:100%; max-width:260px; margin:16px auto 6px; background:none; border:none; cursor:pointer;
+    animation:envelopeFloat 3s ease-in-out infinite;
+  }
+  .envelope-btn svg{ width:100%; filter:drop-shadow(0 8px 16px rgba(74,63,59,.25)); }
+  .envelope-btn:active svg{ transform:scale(.97); }
+  .envelope-hint{
+    font-family:'Space Mono', monospace; font-size:.78rem; font-weight:700; color:var(--sage-dk);
+  }
+  @keyframes envelopeFloat{
+    0%, 100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); }
+  }
+  .letter-paper{
+    background:#FFFBF2; border-radius:4px; padding:22px 20px;
+    box-shadow:0 10px 26px rgba(74,63,59,.15), inset 0 0 0 1px rgba(139,111,71,.15);
+    animation:letterUnfold .4s ease both;
+  }
+  @keyframes letterUnfold{ from{ opacity:0; transform:translateY(10px) scale(.97); } to{ opacity:1; transform:translateY(0) scale(1); } }
+  .letter-paper p{ line-height:1.75; margin-bottom:12px; }
+  .letter-edit-note{
+    font-size:.74rem; color:var(--rose-dk); opacity:.8; font-style:italic;
+  }
+  .letter-photo-btn{
+    display:block; margin:6px auto 0; padding:9px 18px; border-radius:24px;
+    border:2px solid var(--ink); background:#FBF2E4; font-weight:700; font-size:.82rem;
+    cursor:pointer; color:var(--ink);
+  }
+  .letter-photo-btn:active{ transform:scale(.96); }
+
+  .cp-gallery{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:6px; }
+  .cp-gallery .slot{
+    aspect-ratio:1/1; border-radius:12px; border:2px dashed var(--rose-dk);
+    background:repeating-linear-gradient(135deg, #fff 0 10px, #FBEEE3 10px 20px);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    color:var(--rose-dk); font-size:.66rem; padding:6px; font-family:'Space Mono', monospace;
+  }
+  .cp-gallery .photo-slot{
+    border:2px solid rgba(74,63,59,.15); background:none; padding:0; overflow:hidden; cursor:pointer;
+    position:relative;
+  }
+  .cp-gallery .photo-slot img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .photo-caption{
+    position:absolute; left:0; right:0; bottom:0; padding:4px 6px 3px;
+    background:linear-gradient(0deg, rgba(0,0,0,.6), transparent);
+    color:#fff; font-size:.55rem; line-height:1.2; text-align:left;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* ---- Tic-Tac-Toe ---- */
+  .ttt-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-width:220px; margin:14px auto;
+  }
+  .ttt-cell{
+    aspect-ratio:1/1; border-radius:12px; border:2px solid var(--ink); background:#fff;
+    font-size:1.6rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .ttt-cell.filled{ cursor:default; }
+  .ttt-status{ text-align:center; font-weight:700; font-size:.9rem; }
+
+  /* ---- Tangkap Hati ---- */
+  .catch-area{
+    position:relative; width:100%; height:260px; margin-top:10px; overflow:hidden;
+    background:linear-gradient(180deg, #FFF6E8, #FBEEE3); border-radius:14px; border:2px solid rgba(74,63,59,.15);
+  }
+  .falling-heart{
+    position:absolute; top:-30px; font-size:1.6rem; cursor:pointer; user-select:none;
+    animation-name:fallDown; animation-timing-function:linear; animation-fill-mode:forwards;
+  }
+  @keyframes fallDown{ from{ top:-30px; } to{ top:100%; } }
+
+  /* ---- Puzzle Geser ---- */
+  .slide-cell{ font-weight:700; font-size:1.3rem; }
+  .slide-blank{ background:#F2E7D5; border-style:dashed; cursor:default; }
+
+  /* ---- Suit Ketangkasan ---- */
+  .whack-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; max-width:220px; margin:14px auto;
+  }
+  .whack-cell{
+    aspect-ratio:1/1; border-radius:12px; border:2px solid var(--ink); background:#fff;
+    font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .whack-cell.active::before{ content:"🦋"; }
+  .whack-cell.active{ background:#FDE4EA; }
+
+  /* ---- Batu Gunting Kertas ---- */
+  .rps-row{ display:flex; justify-content:center; gap:12px; margin-bottom:10px; }
+  .rps-btn{
+    width:60px; height:60px; border-radius:50%; border:2px solid var(--ink); background:#fff;
+    font-size:1.7rem; cursor:pointer;
+  }
+  .rps-btn:active{ transform:scale(.92); }
+
+  /* ---- Roda Keberuntungan ---- */
+  .wheel-wrap{ position:relative; width:200px; height:200px; margin:16px auto 0; }
+  .wheel{
+    width:100%; height:100%; border-radius:50%; border:4px solid var(--ink);
+    background:conic-gradient(var(--rose) 0deg 60deg, var(--sage) 60deg 120deg, var(--gold) 120deg 180deg,
+                               var(--rose-dk) 180deg 240deg, var(--sage-dk) 240deg 300deg, #E8DCC0 300deg 360deg);
+    transition:transform 2.5s cubic-bezier(.17,.67,.16,.99);
+  }
+  .wheel-pointer{
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    font-size:1.3rem; color:var(--ink);
+  }
+
+  /* ---- Ingat Pola (Simon) ---- */
+  .simon-grid{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; max-width:180px; margin:14px auto;
+  }
+  .simon-btn{
+    aspect-ratio:1/1; border-radius:14px; border:2px solid var(--ink); cursor:pointer; opacity:.5;
+    transition:opacity .15s ease, transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    filter:saturate(.7) brightness(.95);
+  }
+  .simon-btn.lit{
+    opacity:1; transform:scale(1.08); filter:saturate(1.8) brightness(1.25);
+    box-shadow:0 0 0 3px #fff, 0 0 18px 6px rgba(255,255,255,.55);
+  }
+  .simon-rose{ background:var(--rose); }
+  .simon-sage{ background:var(--sage); }
+  .simon-gold{ background:var(--gold); }
+  .simon-ink{ background:var(--ink); }
+
+  /* ---- Tebak Koin ---- */
+  .coin{
+    font-size:4rem; text-align:center; margin:10px 0; transition:transform .5s ease;
+  }
+  .coin.flipping{ animation:coinSpin .5s linear; }
+  @keyframes coinSpin{
+    0%{ transform:rotateY(0); } 100%{ transform:rotateY(1080deg); }
+  }
+
+  /* ---- Uji Refleks ---- */
+  .reflex-box{
+    margin:14px auto; width:100%; max-width:260px; height:120px; border-radius:16px;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem;
+    background:#E8DCC0; border:2px solid var(--ink); cursor:pointer; color:var(--ink);
+  }
+  .reflex-box.waiting{ background:#F0A6A6; color:#fff; }
+  .reflex-box.go{ background:#7EC98A; color:#fff; }
+
+  /* ---- Tebak Warna (anak-anak) ---- */
+  .color-grid{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; max-width:200px; margin:14px auto;
+  }
+  .color-swatch{
+    aspect-ratio:1/1; border-radius:16px; border:3px solid var(--ink); cursor:pointer;
+  }
+  .color-swatch:active{ transform:scale(.94); }
+
+  .scene-picker{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px;
+  }
+  .scene-btn{
+    flex:0 0 auto; width:46px; height:46px; border-radius:14px; font-size:1.4rem;
+    border:2.5px solid rgba(74,63,59,.2); background:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .scene-btn.active{ border-color:var(--sage-dk); background:#EAF3E6; }
+
+  /* ---- Lengkapi Kata ---- */
+  .wordfill-row{ display:flex; justify-content:center; gap:6px; margin:10px 0; }
+  .wordfill-box{
+    width:38px; height:44px; border:2px solid var(--ink); border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.3rem; font-weight:800; background:#fff; text-transform:uppercase;
+  }
+  .wordfill-box.blank{ background:#F2E7D5; border-style:dashed; }
+  .wordfill-box.filled{ background:#DCF0D8; border-color:#7EC98A; }
+
+  /* ---- Labirin: halaman penuh (background sama kayak explore) ---- */
+  #mazeScene{
+    position:fixed; inset:0; z-index:85; display:none; overflow:hidden;
+    background:linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-bot) 100%);
+  }
+  #mazeScene.show{ display:block; }
+  #mazeScene .hill-back{ bottom:96px; }
+  #mazeScene .hill-front{ bottom:64px; }
+  #mazeScene .merapi-smoke{ bottom:374px; }
+  #mazeScene .sun{ top:30%; }
+
+  .maze-exit-btn{
+    position:absolute; top:16px; left:16px; z-index:10; background:#FBF2E4; border:2px solid var(--ink);
+    border-radius:30px; padding:9px 16px; font-weight:700; font-size:.82rem; cursor:pointer;
+    box-shadow:0 4px 0 rgba(74,63,59,.18);
+  }
+  .maze-page-wrap{
+    position:relative; z-index:5; height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:70px 16px 20px;
+  }
+  .maze-title{ font-family:'Fraunces', serif; font-size:1.4rem; margin-bottom:14px; text-align:center; color:var(--ink); }
+  .maze-grid-big{
+    display:grid; gap:0; width:min(88vw, 460px); aspect-ratio:1/1; margin-bottom:16px;
+    background:#FFF6E8; border:3px solid var(--ink); border-radius:10px; overflow:hidden;
+    box-shadow:0 14px 32px rgba(74,63,59,.2);
+  }
+  .maze-cell-big{
+    display:flex; align-items:center; justify-content:center; box-sizing:border-box; padding:2px;
+  }
+  .maze-controls-big{
+    display:grid; grid-template-columns:repeat(3, 56px); grid-template-rows:repeat(2, 56px);
+    gap:8px; justify-content:center; margin-bottom:10px;
+  }
+  .maze-btn-big{
+    width:56px; height:56px; font-size:1.5rem; border-radius:14px; border:2px solid var(--ink);
+    background:#FBF2E4; cursor:pointer; box-shadow:0 4px 0 rgba(74,63,59,.18);
+  }
+  .maze-btn-big:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(74,63,59,.18); }
+  .maze-status-big{
+    font-weight:700; text-align:center; color:var(--ink); margin-bottom:10px;
+    text-shadow:0 1px 4px rgba(255,255,255,.6);
+  }
+  .maze-retry-btn{ display:none; }
+  .maze-retry-btn.show{ display:inline-block; }
+</style>
+</head>
+<body>
+
+<div class="sky-bg">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="cloud c4"></div>
+</div>
+
+<button class="music-fab" id="musicToggle" title="Nyala/matikan musik" aria-label="Nyala/matikan musik">🔈</button>
+<audio id="bgm" src="minigame-bgm.mp3" loop preload="none"></audio>
+
+<div class="page">
+  <div id="cpPanelBody"></div>
+</div>
+
+<script>
+(function(){
+  var cpPanelBody = document.getElementById('cpPanelBody');
+
+  var bgm = document.getElementById('bgm');
+  var musicToggle = document.getElementById('musicToggle');
+  var musicOn = false;
+
+  function tryPlayBgm(){
+    musicOn = true;
+    musicToggle.textContent = '🔊';
+    bgm.play().catch(function(err){
+      // pausing again before play() settles throws a harmless AbortError - ignore it
+      if (err && err.name === 'AbortError') return;
+      // a later click may have already toggled state back off; don't clobber it
+      if (!musicOn) return;
+      musicOn = false;
+      musicToggle.textContent = '🔈';
+    });
+  }
+
+  musicToggle.addEventListener('click', function(){
+    if (musicOn){
+      bgm.pause();
+      musicOn = false;
+      musicToggle.textContent = '🔈';
+    } else {
+      tryPlayBgm();
+    }
+  });
+
+  // try to start music right away; if the browser blocks autoplay-with-sound,
+  // fall back to starting on the very first tap/keypress anywhere on the page
+  tryPlayBgm();
+  ['click', 'touchstart', 'keydown'].forEach(function(evt){
+    document.addEventListener(evt, function firstInteract(){
+      if (!musicOn) tryPlayBgm();
+      document.removeEventListener(evt, firstInteract);
+    }, { once:true });
+  });
+
+  var TILE_COLORS = ['#9B6BDB','#F5923E','#F2C94C','#EC4899','#6FCF3F','#4AA3DF','#F16C6C'];
+  var TILE_TINTS  = ['#EDE1FB','#FDE7D3','#FDF3C7','#FBD7E8','#DFF5D3','#D8EFFB','#FCDCDC'];
+  function tileGrid(items){
+    return '<div class="tile-grid">' + items.map(function(it, i){
+      var color = TILE_COLORS[i % TILE_COLORS.length];
+      var tint = TILE_TINTS[i % TILE_TINTS.length];
+      var delay = (i % 5) * 0.18;
+      var rot = [-2.5, 2, -1.5, 2.5, -2, 1.5][i % 6];
+      return '<button class="tile" data-target="' + it[0] + '" style="--tile-color:' + color + ';--tile-bg:' + tint + ';--tile-delay:' + delay + 's;--tile-rot:' + rot + 'deg">' +
+               '<span class="tile-icon-wrap"><span class="tile-icon">' + it[1] + '</span></span>' +
+               '<span class="tile-label">' + it[2] + '</span>' +
+             '</button>';
+    }).join('') + '</div>';
+  }
+
+  function renderMiniGameMenu(){
+    cpPanelBody.innerHTML =
+      '<div class="menu-banner"><h1>Mini Games</h1><p>Pilih salah satu buat main!</p></div>' +
+      '<p class="eyebrow section-label">Buat Adik-Adik 🧸</p>' +
+      tileGrid([
+        ['addition','➕','Tambah-tambahan'],
+        ['counting','🔢','Hitung Gambar'],
+        ['colors','🎨','Tebak Warna'],
+        ['order','🔡','Urutan Angka'],
+        ['wordfill','✏️','Lengkapi Kata'],
+        ['objmatch','🧸','Cocok Objek'],
+        ['linematch','🖇️','Tarik Garis'],
+        ['snake','🐍','Ular Lapar'],
+        ['coloring','🖍️','Mewarnai'],
+        ['quiz','📅','Tebak Tanggal'],
+        ['wheel','🎡','Roda Untung'],
+        ['simon','🧠','Ingat Pola'],
+        ['scramble','🔤','Susun Huruf']
+      ]) +
+      '<p class="eyebrow section-label">Buat Semua Umur</p>' +
+      tileGrid([
+        ['ttt','⭕','Tic-Tac-Toe'],
+        ['catch','💕','Tangkap Hati'],
+        ['slide','🧩','Puzzle Geser'],
+        ['lovequiz','💌','Kuis Cinta'],
+        ['whack','🦋','Suit Tangkas'],
+        ['rps','✊','Batu Gunting'],
+        ['guess','🎯','Tebak Angka'],
+        ['coin','🪙','Tebak Koin'],
+        ['reflex','⚡','Uji Refleks'],
+        ['maze','🗺️','Labirin']
+      ]);
+
+    cpPanelBody.querySelectorAll('.tile').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var target = btn.dataset.target;
+        if (target === 'ttt') renderTicTacToe();
+        else if (target === 'objmatch') renderObjectMatch();
+        else if (target === 'linematch') renderLineMatch();
+        else if (target === 'snake') renderSnakeGame();
+        else if (target === 'coloring') renderColoring();
+        else if (target === 'catch') renderCatchHearts();
+        else if (target === 'quiz') renderDateQuiz();
+        else if (target === 'slide') renderSlidePuzzle();
+        else if (target === 'lovequiz') renderLoveQuiz();
+        else if (target === 'whack') renderWhackGame();
+        else if (target === 'rps') renderRPS();
+        else if (target === 'wheel') renderWheel();
+        else if (target === 'simon') renderSimon();
+        else if (target === 'guess') renderGuessNumber();
+        else if (target === 'coin') renderCoinFlip();
+        else if (target === 'reflex') renderReflexTest();
+        else if (target === 'scramble') renderWordScramble();
+        else if (target === 'addition') renderAddition();
+        else if (target === 'counting') renderCounting();
+        else if (target === 'colors') renderColorGuess();
+        else if (target === 'order') renderNumberOrder();
+        else if (target === 'maze') renderMazeGame();
+        else renderWordFill();
+      });
+    });
+  }
+
+  // ---- Game 1: Tic-Tac-Toe (♥ vs ★, lawan komputer sederhana) ----
+  function renderTicTacToe(){
+    var board = ['','','','','','','','',''];
+    var gameOver = false;
+    var WIN_LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tic-Tac-Toe</p>' +
+      '<h3>Kamu (♥) vs Komputer (★)</h3>' +
+      '<div class="ttt-grid" id="tttGrid"></div>' +
+      '<p class="ttt-status" id="tttStatus">Giliran kamu, tap kotaknya!</p>' +
+      '<button class="btn-primary" id="tttReset" style="margin-top:10px;">Main Lagi</button>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+    document.getElementById('tttReset').addEventListener('click', renderTicTacToe);
+
+    var grid = document.getElementById('tttGrid');
+    var status = document.getElementById('tttStatus');
+    var cells = [];
+    for (var i = 0; i < 9; i++){
+      var cell = document.createElement('button');
+      cell.className = 'ttt-cell';
+      cell.dataset.i = i;
+      cell.addEventListener('click', function(){ onPlayerMove(parseInt(this.dataset.i, 10)); });
+      grid.appendChild(cell);
+      cells.push(cell);
+    }
+
+    function checkWinner(b){
+      for (var i = 0; i < WIN_LINES.length; i++){
+        var line = WIN_LINES[i];
+        if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[1]] === b[line[2]]) return b[line[0]];
+      }
+      if (b.every(function(c){ return c; })) return 'draw';
+      return null;
+    }
+
+    function computerMove(){
+      var empty = board.map(function(c,i){ return c ? -1 : i; }).filter(function(i){ return i >= 0; });
+      // coba menang
+      for (var i = 0; i < empty.length; i++){
+        var b = board.slice(); b[empty[i]] = '★';
+        if (checkWinner(b) === '★'){ board[empty[i]] = '★'; return; }
+      }
+      // coba blokir
+      for (var j = 0; j < empty.length; j++){
+        var b2 = board.slice(); b2[empty[j]] = '♥';
+        if (checkWinner(b2) === '♥'){ board[empty[j]] = '★'; return; }
+      }
+      // random
+      board[empty[Math.floor(Math.random() * empty.length)]] = '★';
+    }
+
+    function render(){
+      cells.forEach(function(cell, i){
+        cell.textContent = board[i];
+        cell.classList.toggle('filled', !!board[i]);
+      });
+    }
+
+    function onPlayerMove(i){
+      if (gameOver || board[i]) return;
+      board[i] = '♥';
+      render();
+      var w = checkWinner(board);
+      if (w){ finish(w); return; }
+      status.textContent = 'Komputer mikir...';
+      setTimeout(function(){
+        computerMove();
+        render();
+        var w2 = checkWinner(board);
+        if (w2){ finish(w2); return; }
+        status.textContent = 'Giliran kamu, tap kotaknya!';
+      }, 400);
+    }
+
+    function finish(w){
+      gameOver = true;
+      if (w === 'draw') status.textContent = 'Seri! Coba lagi yuk ✨';
+      else if (w === '♥') status.textContent = 'Kamu menang! 🎉';
+      else status.textContent = 'Komputer menang, coba lagi!';
+    }
+  }
+
+  // ---- Game: Mencocokkan Objek (memory match generik) ----
+  function renderObjectMatch(){
+    var icons = ['🐶','🐱','🐰','🐻','🦊','🐼'];
+    var deck = icons.concat(icons).map(function(ic, i){ return { id:i, icon:ic }; });
+    shuffleArr(deck);
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Mencocokkan Objek</p>' +
+      '<h3>Cocokkan Semua Pasangan</h3>' +
+      '<div class="memory-grid" id="objGrid" style="grid-template-columns:repeat(4, 1fr);"></div>' +
+      '<p class="ttt-status" id="objStatus">Tap 2 kartu buat mencocokkan</p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var grid = document.getElementById('objGrid');
+    var status = document.getElementById('objStatus');
+    var flipped = [];
+    var matchedCount = 0;
+    var lock = false;
+
+    deck.forEach(function(card){
+      var el = document.createElement('button');
+      el.className = 'mem-card';
+      el.dataset.icon = card.icon;
+      el.innerHTML = '<span class="mem-face mem-back">?</span><span class="mem-face mem-front">' + card.icon + '</span>';
+      el.addEventListener('click', function(){
+        if (lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+        el.classList.add('flipped');
+        flipped.push(el);
+        if (flipped.length === 2){
+          lock = true;
+          var a = flipped[0], b = flipped[1];
+          if (a.dataset.icon === b.dataset.icon){
+            setTimeout(function(){
+              a.classList.add('matched'); b.classList.add('matched');
+              flipped = []; lock = false; matchedCount++;
+              if (matchedCount === icons.length){
+                status.textContent = '🎉 Semua kecocokan ketemu!';
+                var retry = document.createElement('button');
+                retry.className = 'btn-primary'; retry.style.marginTop = '10px';
+                retry.textContent = 'Main Lagi';
+                retry.addEventListener('click', renderObjectMatch);
+                cpPanelBody.appendChild(retry);
+              }
+            }, 350);
+          } else {
+            setTimeout(function(){
+              a.classList.remove('flipped'); b.classList.remove('flipped');
+              flipped = []; lock = false;
+            }, 700);
+          }
+        }
+      });
+      grid.appendChild(el);
+    });
+  }
+
+  // ---- Game: Tarik Garis (drag garis buat hubungkan gambar & nama) ----
+  function renderLineMatch(){
+    var pairs = [
+      { key:'apel', icon:'🍎', word:'Apel' },
+      { key:'kucing', icon:'🐱', word:'Kucing' },
+      { key:'mobil', icon:'🚗', word:'Mobil' },
+      { key:'bulan', icon:'🌙', word:'Bulan' },
+      { key:'bintang', icon:'⭐', word:'Bintang' },
+      { key:'balon', icon:'🎈', word:'Balon' }
+    ];
+    var leftOrder = shuffleArr(pairs.slice());
+    var rightOrder = shuffleArr(pairs.slice());
+    var matchedCount = 0;
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tarik Garis</p>' +
+      '<h3>Hubungkan Gambar & Namanya</h3>' +
+      '<p style="margin-bottom:8px;">Tahan lalu tarik dari gambar ke nama yang cocok</p>' +
+      '<div class="linematch-wrap" id="lineMatchWrap">' +
+        '<svg class="linematch-svg" id="lineMatchSvg"></svg>' +
+        '<div class="linematch-col" id="lmLeft"></div>' +
+        '<div class="linematch-col" id="lmRight"></div>' +
+      '</div>' +
+      '<p class="ttt-status" id="lineMatchStatus"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var wrap = document.getElementById('lineMatchWrap');
+    var svg = document.getElementById('lineMatchSvg');
+    var leftCol = document.getElementById('lmLeft');
+    var rightCol = document.getElementById('lmRight');
+    var status = document.getElementById('lineMatchStatus');
+
+    leftOrder.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'linematch-node';
+      b.dataset.match = p.key;
+      b.dataset.side = 'left';
+      b.textContent = p.icon;
+      leftCol.appendChild(b);
+    });
+    rightOrder.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'linematch-node';
+      b.dataset.match = p.key;
+      b.dataset.side = 'right';
+      b.textContent = p.word;
+      rightCol.appendChild(b);
+    });
+
+    function sizeSvg(){
+      svg.setAttribute('width', wrap.clientWidth);
+      svg.setAttribute('height', wrap.clientHeight);
+    }
+    sizeSvg();
+    window.addEventListener('resize', sizeSvg);
+
+    function centerOf(el){
+      var r = el.getBoundingClientRect();
+      var wr = wrap.getBoundingClientRect();
+      return { x: r.left + r.width / 2 - wr.left, y: r.top + r.height / 2 - wr.top };
+    }
+
+    var dragging = null;
+    var tempLine = null;
+
+    function startDrag(node, e){
+      if (node.classList.contains('matched')) return;
+      dragging = node;
+      var c = centerOf(node);
+      tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      tempLine.setAttribute('x1', c.x); tempLine.setAttribute('y1', c.y);
+      tempLine.setAttribute('x2', c.x); tempLine.setAttribute('y2', c.y);
+      tempLine.setAttribute('stroke', 'var(--sage-dk)');
+      tempLine.setAttribute('stroke-width', '3');
+      tempLine.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(tempLine);
+      e.preventDefault();
+    }
+
+    function moveDrag(clientX, clientY){
+      if (!dragging || !tempLine) return;
+      var wr = wrap.getBoundingClientRect();
+      tempLine.setAttribute('x2', clientX - wr.left);
+      tempLine.setAttribute('y2', clientY - wr.top);
+    }
+
+    function endDrag(clientX, clientY){
+      if (!dragging) return;
+      var target = document.elementFromPoint(clientX, clientY);
+      var targetNode = target && target.closest ? target.closest('.linematch-node') : null;
+      if (tempLine){ svg.removeChild(tempLine); tempLine = null; }
+
+      if (targetNode && targetNode !== dragging && targetNode.dataset.side !== dragging.dataset.side){
+        if (targetNode.dataset.match === dragging.dataset.match && !targetNode.classList.contains('matched')){
+          var c1 = centerOf(dragging), c2 = centerOf(targetNode);
+          var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', c1.x); line.setAttribute('y1', c1.y);
+          line.setAttribute('x2', c2.x); line.setAttribute('y2', c2.y);
+          line.setAttribute('stroke', '#7EC98A');
+          line.setAttribute('stroke-width', '4');
+          line.setAttribute('stroke-linecap', 'round');
+          svg.appendChild(line);
+          dragging.classList.add('matched');
+          targetNode.classList.add('matched');
+          matchedCount++;
+          if (matchedCount === pairs.length){
+            status.textContent = '🎉 Semua berhasil dihubungkan!';
+            var retry = document.createElement('button');
+            retry.className = 'btn-primary'; retry.style.marginTop = '10px';
+            retry.textContent = 'Main Lagi';
+            retry.addEventListener('click', renderLineMatch);
+            cpPanelBody.appendChild(retry);
+          }
+        } else {
+          status.textContent = 'Belum tepat, coba lagi ya 😊';
+        }
+      }
+      dragging = null;
+    }
+
+    wrap.querySelectorAll('.linematch-node').forEach(function(node){
+      node.addEventListener('mousedown', function(e){ startDrag(node, e); });
+      node.addEventListener('touchstart', function(e){ startDrag(node, e.touches[0]); }, { passive:false });
+    });
+    document.addEventListener('mousemove', function(e){ moveDrag(e.clientX, e.clientY); });
+    document.addEventListener('touchmove', function(e){
+      if (dragging) { moveDrag(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }
+    }, { passive:false });
+    document.addEventListener('mouseup', function(e){ endDrag(e.clientX, e.clientY); });
+    document.addEventListener('touchend', function(e){
+      if (dragging){
+        var t = e.changedTouches[0];
+        endDrag(t.clientX, t.clientY);
+      }
+    });
+  }
+
+  // ---- Game: Ular Lapar (Snake sederhana pakai canvas) ----
+  function renderSnakeGame(){
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Ular Lapar</p>' +
+      '<h3>Skor: <span id="snakeScore">0</span></h3>' +
+      '<canvas id="snakeCanvas" width="280" height="280" style="display:block; margin:0 auto 10px; background:#FFF6E8; border:2px solid var(--ink); border-radius:10px;"></canvas>' +
+      '<div class="maze-controls-big" style="grid-template-columns:repeat(3, 48px); grid-template-rows:repeat(2, 48px);">' +
+        '<div></div><button class="maze-btn-big snake-btn" data-d="up" style="width:48px;height:48px;font-size:1.2rem;">↑</button><div></div>' +
+        '<button class="maze-btn-big snake-btn" data-d="left" style="width:48px;height:48px;font-size:1.2rem;">←</button>' +
+        '<button class="maze-btn-big snake-btn" data-d="down" style="width:48px;height:48px;font-size:1.2rem;">↓</button>' +
+        '<button class="maze-btn-big snake-btn" data-d="right" style="width:48px;height:48px;font-size:1.2rem;">→</button>' +
+      '</div>' +
+      '<p class="ttt-status" id="snakeStatus">Nabrak dinding tembus ke sisi lain, tapi jangan gigit badan sendiri!</p>';
+    document.getElementById('menuBack').addEventListener('click', function(){
+      clearInterval(snakeTimer);
+      renderMiniGameMenu();
+    });
+
+    var canvas = document.getElementById('snakeCanvas');
+    var ctx = canvas.getContext('2d');
+    var cell = 20, cols = 14, rows = 14;
+    var snake = [{ x:6, y:7 }, { x:5, y:7 }, { x:4, y:7 }];
+    var dir = { x:1, y:0 };
+    var pendingDir = { x:1, y:0 };
+    var food = randomFood();
+    var score = 0;
+    var running = true;
+
+    function randomFood(){
+      var pos;
+      do {
+        pos = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+      } while (snake.some(function(s){ return s.x === pos.x && s.y === pos.y; }));
+      return pos;
+    }
+
+    function draw(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#E85D5D';
+      ctx.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
+      snake.forEach(function(s, i){
+        ctx.fillStyle = i === 0 ? '#5E7857' : '#93AD8C';
+        ctx.fillRect(s.x * cell + 1, s.y * cell + 1, cell - 2, cell - 2);
+      });
+    }
+
+    function tick(){
+      if (!running) return;
+      dir = pendingDir;
+      var head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // tembus dinding: keluar satu sisi, muncul di sisi seberang
+      if (head.x < 0) head.x = cols - 1;
+      else if (head.x >= cols) head.x = 0;
+      if (head.y < 0) head.y = rows - 1;
+      else if (head.y >= rows) head.y = 0;
+
+      if (snake.some(function(s){ return s.x === head.x && s.y === head.y; })){
+        running = false;
+        clearInterval(snakeTimer);
+        document.getElementById('snakeStatus').textContent = '💥 Kena badan sendiri! Skor akhir: ' + score;
+        var retry = document.createElement('button');
+        retry.className = 'btn-primary'; retry.style.marginTop = '10px';
+        retry.textContent = 'Main Lagi';
+        retry.addEventListener('click', renderSnakeGame);
+        cpPanelBody.appendChild(retry);
+        return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y){
+        score++;
+        document.getElementById('snakeScore').textContent = score;
+        food = randomFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    document.querySelectorAll('.snake-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var d = btn.dataset.d;
+        if (d === 'up' && dir.y === 0) pendingDir = { x:0, y:-1 };
+        else if (d === 'down' && dir.y === 0) pendingDir = { x:0, y:1 };
+        else if (d === 'left' && dir.x === 0) pendingDir = { x:-1, y:0 };
+        else if (d === 'right' && dir.x === 0) pendingDir = { x:1, y:0 };
+      });
+    });
+
+    draw();
+    var snakeTimer = setInterval(tick, 200);
+  }
+
+  // ---- Game: Mewarnai (klik area, isi warna pilihan) ----
+  var COLORING_SCENES = [
+    { label:'Rumah', icon:'🏠', shapes:
+      '<circle class="color-region" data-part="sun" cx="165" cy="30" r="18" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="ground" x="0" y="130" width="200" height="30" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<circle class="color-region" data-part="treecrown" cx="40" cy="90" r="24" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="treetrunk" x="34" y="112" width="12" height="24" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<polygon class="color-region" data-part="roof" points="90,60 145,60 117,30" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="wall" x="90" y="60" width="55" height="70" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="door" x="108" y="100" width="16" height="30" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="window" x="130" y="75" width="14" height="14" fill="#fff" stroke="var(--ink)" stroke-width="2"/>'
+    },
+    { label:'Kucing', icon:'🐱', shapes:
+      '<polygon class="color-region" data-part="earL" points="55,50 70,10 90,45" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="earR" points="145,50 130,10 110,45" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="head" cx="100" cy="85" r="50" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<ellipse class="color-region" data-part="bowtie" cx="100" cy="140" rx="18" ry="10" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle cx="82" cy="80" r="5" fill="var(--ink)"/>' +
+      '<circle cx="118" cy="80" r="5" fill="var(--ink)"/>' +
+      '<polygon points="95,95 105,95 100,102" fill="var(--ink)"/>' +
+      '<line x1="60" y1="100" x2="30" y2="95" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="60" y1="108" x2="30" y2="112" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="140" y1="100" x2="170" y2="95" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="140" y1="108" x2="170" y2="112" stroke="var(--ink)" stroke-width="2"/>'
+    },
+    { label:'Ikan', icon:'🐟', shapes:
+      '<polygon class="color-region" data-part="tail" points="145,85 185,55 185,115" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<ellipse class="color-region" data-part="body" cx="90" cy="85" rx="55" ry="35" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="finTop" points="80,50 100,20 110,52" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="finBottom" points="80,120 100,150 110,118" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle cx="55" cy="78" r="6" fill="var(--ink)"/>'
+    },
+    { label:'Kupu-kupu', icon:'🦋', shapes:
+      '<ellipse class="color-region" data-part="wingTL" cx="70" cy="55" rx="35" ry="28" fill="#fff" stroke="var(--ink)" stroke-width="3" transform="rotate(-20 70 55)"/>' +
+      '<ellipse class="color-region" data-part="wingTR" cx="130" cy="55" rx="35" ry="28" fill="#fff" stroke="var(--ink)" stroke-width="3" transform="rotate(20 130 55)"/>' +
+      '<ellipse class="color-region" data-part="wingBL" cx="75" cy="105" rx="28" ry="22" fill="#fff" stroke="var(--ink)" stroke-width="3" transform="rotate(-15 75 105)"/>' +
+      '<ellipse class="color-region" data-part="wingBR" cx="125" cy="105" rx="28" ry="22" fill="#fff" stroke="var(--ink)" stroke-width="3" transform="rotate(15 125 105)"/>' +
+      '<rect class="color-region" data-part="body" x="95" y="35" width="10" height="90" rx="5" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<line x1="97" y1="38" x2="85" y2="20" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="103" y1="38" x2="115" y2="20" stroke="var(--ink)" stroke-width="2"/>'
+    },
+    { label:'Mobil', icon:'🚗', shapes:
+      '<rect class="color-region" data-part="body" x="20" y="90" width="160" height="40" rx="10" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="roof" points="55,90 75,55 130,55 150,90" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<rect class="color-region" data-part="windowL" x="80" y="60" width="25" height="28" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<rect class="color-region" data-part="windowR" x="108" y="60" width="25" height="28" fill="#fff" stroke="var(--ink)" stroke-width="2"/>' +
+      '<circle class="color-region" data-part="wheelL" cx="55" cy="132" r="16" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="wheelR" cx="145" cy="132" r="16" fill="#fff" stroke="var(--ink)" stroke-width="3"/>'
+    },
+    { label:'Bunga', icon:'🌼', shapes:
+      '<rect class="color-region" data-part="stem" x="95" y="76" width="10" height="74" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<ellipse class="color-region" data-part="leaf" cx="122" cy="112" rx="18" ry="9" fill="#fff" stroke="var(--ink)" stroke-width="3" transform="rotate(-20 122 112)"/>' +
+      '<circle class="color-region" data-part="petalTop" cx="100" cy="25" r="18" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="petalRight" cx="133" cy="49" r="18" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="petalBottomR" cx="121" cy="88" r="18" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="petalBottomL" cx="79" cy="88" r="18" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="petalLeft" cx="67" cy="49" r="18" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="center" cx="100" cy="60" r="15" fill="#fff" stroke="var(--ink)" stroke-width="3"/>'
+    },
+    { label:'Kucing Pita', icon:'🎀', shapes:
+      '<polygon class="color-region" data-part="earL" points="65,65 75,25 95,60" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="earR" points="135,65 125,25 105,60" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="head" cx="100" cy="100" r="45" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="bowL" points="40,45 58,55 40,65" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="bowR" points="76,45 58,55 76,65" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="bowKnot" cx="58" cy="55" r="7" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<ellipse class="color-region" data-part="collar" cx="100" cy="150" rx="22" ry="10" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle cx="85" cy="95" r="4" fill="var(--ink)"/>' +
+      '<circle cx="115" cy="95" r="4" fill="var(--ink)"/>' +
+      '<polygon points="97,108 103,108 100,113" fill="var(--ink)"/>' +
+      '<line x1="100" y1="113" x2="92" y2="118" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="100" y1="113" x2="108" y2="118" stroke="var(--ink)" stroke-width="2"/>'
+    },
+    { label:'Penyanyi Bintang', icon:'🎤', shapes:
+      '<polygon class="color-region" data-part="hairBack" points="55,42 145,42 152,150 48,150" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle class="color-region" data-part="face" cx="100" cy="58" r="27" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="hairFront" points="74,42 126,42 120,58 80,58" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="dress" points="78,84 122,84 136,150 64,150" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<polygon class="color-region" data-part="hairStar" points="138,25 142,33 150,35 142,37 138,45 134,37 126,35 134,33" fill="#fff" stroke="var(--ink)" stroke-width="2.5"/>' +
+      '<rect class="color-region" data-part="micStand" x="163" y="95" width="4" height="55" fill="#fff" stroke="var(--ink)" stroke-width="2.5"/>' +
+      '<circle class="color-region" data-part="micHead" cx="165" cy="90" r="9" fill="#fff" stroke="var(--ink)" stroke-width="3"/>' +
+      '<circle cx="90" cy="58" r="3" fill="var(--ink)"/>' +
+      '<circle cx="110" cy="58" r="3" fill="var(--ink)"/>' +
+      '<line x1="93" y1="67" x2="100" y2="71" stroke="var(--ink)" stroke-width="2"/>' +
+      '<line x1="100" y1="71" x2="107" y2="67" stroke="var(--ink)" stroke-width="2"/>'
+    }
+  ];
+
+  function renderColoring(sceneIndex){
+    sceneIndex = sceneIndex || 0;
+    var palette = ['#E85D5D','#F0C64A','#7EC98A','#4A90D9','#E8829E','#A388D9','#E08A3E','#4A3F3B','#FFFFFF'];
+    var scene = COLORING_SCENES[sceneIndex];
+
+    var pickerHtml = '<div class="scene-picker" id="scenePicker">' + COLORING_SCENES.map(function(s, i){
+      return '<button class="scene-btn' + (i === sceneIndex ? ' active' : '') + '" data-i="' + i + '">' + s.icon + '</button>';
+    }).join('') + '</div>';
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Mewarnai</p>' +
+      '<h3>Warnai Gambarnya!</h3>' +
+      pickerHtml +
+      '<svg id="coloringSvg" viewBox="0 0 200 160" style="width:100%; max-width:280px; display:block; margin:0 auto 12px; background:#FFF6E8; border-radius:12px; border:2px solid rgba(74,63,59,.15);">' +
+        scene.shapes +
+      '</svg>' +
+      '<div class="color-grid" id="paletteGrid" style="grid-template-columns:repeat(5, 1fr); max-width:220px;"></div>' +
+      '<button class="btn-primary" id="coloringReset" style="margin-top:12px;">Bersihkan</button>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    document.getElementById('scenePicker').querySelectorAll('.scene-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ renderColoring(parseInt(btn.dataset.i, 10)); });
+    });
+
+    var currentColor = palette[0];
+    var paletteGrid = document.getElementById('paletteGrid');
+    palette.forEach(function(hex){
+      var sw = document.createElement('button');
+      sw.className = 'color-swatch';
+      sw.style.background = hex;
+      sw.style.border = hex === '#FFFFFF' ? '3px solid var(--ink)' : '3px solid rgba(74,63,59,.3)';
+      sw.addEventListener('click', function(){
+        currentColor = hex;
+        paletteGrid.querySelectorAll('.color-swatch').forEach(function(s){ s.style.outline = 'none'; });
+        sw.style.outline = '3px solid var(--sage-dk)';
+      });
+      paletteGrid.appendChild(sw);
+    });
+
+    document.querySelectorAll('.color-region').forEach(function(shape){
+      shape.style.cursor = 'pointer';
+      shape.addEventListener('click', function(){ shape.setAttribute('fill', currentColor); });
+    });
+    document.getElementById('coloringReset').addEventListener('click', function(){
+      document.querySelectorAll('.color-region').forEach(function(shape){ shape.setAttribute('fill', '#fff'); });
+    });
+  }
+
+  // ---- Game 2: Tangkap Hati (tap hati yang jatuh, 20 detik) ----
+  function renderCatchHearts(){
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tangkap Hati</p>' +
+      '<h3>Skor: <span id="catchScore">0</span> · Waktu: <span id="catchTime">20</span>s</h3>' +
+      '<div class="catch-area" id="catchArea"></div>' +
+      '<button class="btn-primary" id="catchReset" style="margin-top:10px;">Main Lagi</button>';
+    document.getElementById('menuBack').addEventListener('click', function(){
+      clearInterval(spawnTimer); clearInterval(clockTimer);
+      renderMiniGameMenu();
+    });
+    document.getElementById('catchReset').addEventListener('click', renderCatchHearts);
+
+    var area = document.getElementById('catchArea');
+    var scoreEl = document.getElementById('catchScore');
+    var timeEl = document.getElementById('catchTime');
+    var score = 0;
+    var timeLeft = 20;
+    var running = true;
+
+    function spawnHeart(){
+      if (!running) return;
+      var heart = document.createElement('div');
+      heart.className = 'falling-heart';
+      heart.textContent = '💗';
+      heart.style.left = (Math.random() * 85) + '%';
+      heart.style.animationDuration = (2 + Math.random() * 1.6) + 's';
+      heart.addEventListener('click', function(){
+        if (!running) return;
+        score++; scoreEl.textContent = score;
+        heart.remove();
+      });
+      heart.addEventListener('animationend', function(){ heart.remove(); });
+      area.appendChild(heart);
+    }
+
+    var spawnTimer = setInterval(spawnHeart, 650);
+    var clockTimer = setInterval(function(){
+      timeLeft--;
+      timeEl.textContent = timeLeft;
+      if (timeLeft <= 0){
+        running = false;
+        clearInterval(spawnTimer);
+        clearInterval(clockTimer);
+        area.innerHTML = '<p style="text-align:center; padding-top:30px; font-weight:700;">Waktu habis! Skor kamu: ' + score + ' 💕</p>';
+      }
+    }, 1000);
+  }
+
+  // ---- Game 3: Tebak Tanggal (kuis seputar cerita Ayah & Ibu) ----
+  function renderDateQuiz(){
+    var questions = [
+      { q:'Kapan Ayah & Ibu mulai pacaran?', options:['1 September 2016','1 September 2018','1 September 2020'], correct:0 },
+      { q:'Kapan Ayah & Ibu menikah?', options:['28 November 2018','28 November 2020','28 November 2022'], correct:1 },
+      { q:'Sekarang usia cerita Ayah & Ibu berapa tahun?', options:['8 tahun','10 tahun','12 tahun'], correct:1 }
+    ];
+    var qi = 0, correctCount = 0;
+
+    function showQuestion(){
+      if (qi >= questions.length){ showResult(); return; }
+      var item = questions[qi];
+      var optsHtml = item.options.map(function(opt, i){
+        return '<button class="menu-row quiz-opt" data-i="' + i + '">' +
+               '<span class="menu-txt"><span class="menu-title">' + opt + '</span></span></button>';
+      }).join('');
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Tebak Tanggal (' + (qi+1) + '/' + questions.length + ')</p>' +
+        '<h3>' + item.q + '</h3>' +
+        '<div class="menu-list">' + optsHtml + '</div>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      cpPanelBody.querySelectorAll('.quiz-opt').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var chosen = parseInt(btn.dataset.i, 10);
+          if (chosen === item.correct){
+            correctCount++;
+            btn.style.background = '#DCF0D8';
+          } else {
+            btn.style.background = '#F7D9D9';
+          }
+          setTimeout(function(){ qi++; showQuestion(); }, 600);
+        });
+      });
+    }
+
+    function showResult(){
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Tebak Tanggal</p>' +
+        '<h3>Skor kamu: ' + correctCount + '/' + questions.length + '</h3>' +
+        '<p>' + (correctCount === questions.length ? 'Keren, hafal semua cerita Ayah & Ibu! 🥰' : 'Yuk cari tahu lagi lain kali ya 💛') + '</p>' +
+        '<button class="btn-primary" id="quizRetry" style="margin-top:10px;">Main Lagi</button>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      document.getElementById('quizRetry').addEventListener('click', renderDateQuiz);
+    }
+
+    showQuestion();
+  }
+
+  // ---- Game 4: Puzzle Geser (8-puzzle sederhana) ----
+  function renderSlidePuzzle(){
+    var size = 3;
+    var tiles = [1,2,3,4,5,6,7,8,null]; // null = kosong
+    // acak dengan gerakan valid biar selalu bisa diselesaikan
+    for (var s = 0; s < 200; s++){
+      var blank = tiles.indexOf(null);
+      var neighbors = getNeighbors(blank);
+      var pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+      tiles[blank] = tiles[pick]; tiles[pick] = null;
+    }
+
+    function getNeighbors(i){
+      var r = Math.floor(i / size), c = i % size;
+      var list = [];
+      if (r > 0) list.push(i - size);
+      if (r < size - 1) list.push(i + size);
+      if (c > 0) list.push(i - 1);
+      if (c < size - 1) list.push(i + 1);
+      return list;
+    }
+
+    function isSolved(){
+      for (var i = 0; i < 8; i++){ if (tiles[i] !== i + 1) return false; }
+      return tiles[8] === null;
+    }
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Puzzle Geser</p>' +
+      '<h3>Susun Jadi 1-8</h3>' +
+      '<div class="ttt-grid" id="slideGrid" style="max-width:210px;"></div>' +
+      '<p class="ttt-status" id="slideStatus">Klik kotak yang nempel sama yang kosong</p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var grid = document.getElementById('slideGrid');
+    var status = document.getElementById('slideStatus');
+
+    function render(){
+      grid.innerHTML = '';
+      tiles.forEach(function(val, i){
+        var cell = document.createElement('button');
+        cell.className = 'ttt-cell slide-cell';
+        cell.textContent = val || '';
+        if (!val) cell.classList.add('slide-blank');
+        cell.addEventListener('click', function(){ tryMove(i); });
+        grid.appendChild(cell);
+      });
+    }
+
+    function tryMove(i){
+      var blank = tiles.indexOf(null);
+      if (getNeighbors(blank).indexOf(i) === -1) return;
+      tiles[blank] = tiles[i]; tiles[i] = null;
+      render();
+      if (isSolved()){
+        status.textContent = '🎉 Berhasil! Rapi banget!';
+      }
+    }
+
+    render();
+  }
+
+  // ---- Game 5: Kuis Cinta (playful, jawaban apapun seru) ----
+  function renderLoveQuiz(){
+    var questions = [
+      { q:'Kalau liburan, kalian tim...', options:['🏖️ Pantai', '🏔️ Gunung', '🏙️ Kota'] },
+      { q:'Bareng keluarga paling seru kalau...', options:['🍜 Makan enak', '🎮 Main bareng', '📸 Foto-foto'] },
+      { q:'Ayah & Ibu itu...', options:['😍 Lucu banget', '🥰 Baik banget', '😂 Kompak banget'] }
+    ];
+    var qi = 0;
+
+    function showQuestion(){
+      if (qi >= questions.length){ showResult(); return; }
+      var item = questions[qi];
+      var optsHtml = item.options.map(function(opt, i){
+        return '<button class="menu-row quiz-opt" data-i="' + i + '">' +
+               '<span class="menu-txt"><span class="menu-title">' + opt + '</span></span></button>';
+      }).join('');
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Kuis Cinta (' + (qi+1) + '/' + questions.length + ')</p>' +
+        '<h3>' + item.q + '</h3>' +
+        '<div class="menu-list">' + optsHtml + '</div>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      cpPanelBody.querySelectorAll('.quiz-opt').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          btn.style.background = '#FDE4EA';
+          setTimeout(function(){ qi++; showQuestion(); }, 400);
+        });
+      });
+    }
+
+    function showResult(){
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Kuis Cinta</p>' +
+        '<h3>Makasih udah jawab! 💌</h3>' +
+        '<p>Nggak ada jawaban salah kok, yang penting seneng bareng keluarga 🤍</p>' +
+        '<button class="btn-primary" id="loveRetry" style="margin-top:10px;">Main Lagi</button>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      document.getElementById('loveRetry').addEventListener('click', renderLoveQuiz);
+    }
+
+    showQuestion();
+  }
+
+  // ---- Game 6: Suit Ketangkasan (tap kupu-kupu yang muncul cepat) ----
+  function renderWhackGame(){
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Suit Ketangkasan</p>' +
+      '<h3>Skor: <span id="whackScore">0</span> · Waktu: <span id="whackTime">20</span>s</h3>' +
+      '<div class="whack-grid" id="whackGrid"></div>';
+    document.getElementById('menuBack').addEventListener('click', function(){
+      clearInterval(popTimer); clearInterval(whackClock);
+      renderMiniGameMenu();
+    });
+
+    var gridEl = document.getElementById('whackGrid');
+    var scoreEl = document.getElementById('whackScore');
+    var timeEl = document.getElementById('whackTime');
+    var score = 0, timeLeft = 20, running = true;
+    var cells = [];
+    for (var i = 0; i < 9; i++){
+      var cell = document.createElement('button');
+      cell.className = 'whack-cell';
+      cell.addEventListener('click', function(){
+        if (this.classList.contains('active')){
+          score++; scoreEl.textContent = score;
+          this.classList.remove('active');
+        }
+      });
+      gridEl.appendChild(cell);
+      cells.push(cell);
+    }
+
+    function popRandom(){
+      if (!running) return;
+      cells.forEach(function(c){ c.classList.remove('active'); });
+      var idx = Math.floor(Math.random() * cells.length);
+      cells[idx].classList.add('active');
+      setTimeout(function(){ cells[idx].classList.remove('active'); }, 550);
+    }
+
+    var popTimer = setInterval(popRandom, 700);
+    var whackClock = setInterval(function(){
+      timeLeft--;
+      timeEl.textContent = timeLeft;
+      if (timeLeft <= 0){
+        running = false;
+        clearInterval(popTimer); clearInterval(whackClock);
+        gridEl.innerHTML = '<p style="text-align:center; padding-top:40px; font-weight:700; grid-column:1/-1;">Waktu habis! Skor kamu: ' + score + ' 🦋</p>';
+      }
+    }, 1000);
+  }
+
+  // ---- Game 7: Batu Gunting Kertas vs komputer ----
+  function renderRPS(){
+    var choices = [
+      { key:'batu', icon:'✊', label:'Batu' },
+      { key:'kertas', icon:'✋', label:'Kertas' },
+      { key:'gunting', icon:'✌️', label:'Gunting' }
+    ];
+    var win = 0, lose = 0, draw = 0;
+
+    function renderMain(){
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Batu Gunting Kertas</p>' +
+        '<h3>Menang ' + win + ' · Kalah ' + lose + ' · Seri ' + draw + '</h3>' +
+        '<p style="margin-bottom:10px;">Pilih salah satu:</p>' +
+        '<div class="rps-row" id="rpsRow"></div>' +
+        '<p class="ttt-status" id="rpsResult">Yuk pilih dulu!</p>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      var row = document.getElementById('rpsRow');
+      choices.forEach(function(c){
+        var btn = document.createElement('button');
+        btn.className = 'rps-btn';
+        btn.textContent = c.icon;
+        btn.title = c.label;
+        btn.addEventListener('click', function(){ play(c); });
+        row.appendChild(btn);
+      });
+    }
+
+    function play(playerChoice){
+      var comp = choices[Math.floor(Math.random() * choices.length)];
+      var result = document.getElementById('rpsResult');
+      var outcome;
+      if (playerChoice.key === comp.key){ outcome = 'draw'; draw++; }
+      else if (
+        (playerChoice.key === 'batu' && comp.key === 'gunting') ||
+        (playerChoice.key === 'gunting' && comp.key === 'kertas') ||
+        (playerChoice.key === 'kertas' && comp.key === 'batu')
+      ){ outcome = 'win'; win++; }
+      else { outcome = 'lose'; lose++; }
+
+      var msg = 'Kamu ' + playerChoice.icon + ' vs Komputer ' + comp.icon + ' — ';
+      if (outcome === 'draw') msg += 'Seri!';
+      else if (outcome === 'win') msg += 'Kamu Menang! 🎉';
+      else msg += 'Komputer Menang!';
+      result.textContent = msg;
+      cpPanelBody.querySelector('h3').textContent = 'Menang ' + win + ' · Kalah ' + lose + ' · Seri ' + draw;
+    }
+
+    renderMain();
+  }
+
+  // ---- Game 8: Roda Keberuntungan ----
+  function renderWheel(){
+    var prizes = [
+      'Pelukan gratis dari Ayah 🤗',
+      'Boleh milih tempat makan di Bandung 🍜',
+      'Foto keluarga pakai gaya lucu 📸',
+      'Nyanyi bareng di mobil sepanjang jalan 🎶',
+      'Ditraktir snack favorit 🍟',
+      'Main petak umpet di penginapan 🙈'
+    ];
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Roda Keberuntungan</p>' +
+      '<h3>Putar & Lihat Dapat Apa!</h3>' +
+      '<div class="wheel-wrap"><div class="wheel" id="wheelEl"></div><div class="wheel-pointer">▼</div></div>' +
+      '<button class="btn-primary" id="wheelSpin" style="margin-top:14px;">Putar!</button>' +
+      '<p class="ttt-status" id="wheelResult"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var wheelEl = document.getElementById('wheelEl');
+    var spinBtn = document.getElementById('wheelSpin');
+    var resultEl = document.getElementById('wheelResult');
+    var currentRotation = 0;
+    var spinning = false;
+
+    spinBtn.addEventListener('click', function(){
+      if (spinning) return;
+      spinning = true;
+      resultEl.textContent = '';
+      var extraSpins = 4 + Math.floor(Math.random() * 3); // 4-6 putaran penuh
+      var randomOffset = Math.floor(Math.random() * 360);
+      currentRotation += extraSpins * 360 + randomOffset;
+      wheelEl.style.transform = 'rotate(' + currentRotation + 'deg)';
+      setTimeout(function(){
+        spinning = false;
+        var prize = prizes[Math.floor(Math.random() * prizes.length)];
+        resultEl.textContent = '🎁 Kamu dapat: ' + prize;
+      }, 2600);
+    });
+  }
+
+  // ---- Game 9: Ingat Pola (Simon Says sederhana) ----
+  function renderSimon(){
+    var colors = ['rose', 'sage', 'gold', 'ink'];
+    var sequence = [];
+    var playerStep = 0;
+    var accepting = false;
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Ingat Pola</p>' +
+      '<h3>Level: <span id="simonLevel">1</span></h3>' +
+      '<div class="simon-grid" id="simonGrid"></div>' +
+      '<p class="ttt-status" id="simonStatus">Perhatiin urutannya dulu ya...</p>';
+    document.getElementById('menuBack').addEventListener('click', function(){
+      accepting = false;
+      renderMiniGameMenu();
+    });
+
+    var grid = document.getElementById('simonGrid');
+    var status = document.getElementById('simonStatus');
+    var levelEl = document.getElementById('simonLevel');
+    var buttons = colors.map(function(c){
+      var b = document.createElement('button');
+      b.className = 'simon-btn simon-' + c;
+      b.addEventListener('click', function(){ onPick(c); });
+      grid.appendChild(b);
+      return b;
+    });
+
+    function flash(color, cb){
+      var btn = buttons[colors.indexOf(color)];
+      btn.classList.add('lit');
+      setTimeout(function(){
+        btn.classList.remove('lit');
+        setTimeout(cb, 400);
+      }, 650);
+    }
+
+    function playSequence(){
+      accepting = false;
+      status.textContent = 'Perhatiin urutannya...';
+      var i = 0;
+      function step(){
+        if (i >= sequence.length){ accepting = true; playerStep = 0; status.textContent = 'Giliran kamu, ulangi urutannya!'; return; }
+        flash(sequence[i], function(){ i++; step(); });
+      }
+      step();
+    }
+
+    function nextRound(){
+      sequence.push(colors[Math.floor(Math.random() * colors.length)]);
+      levelEl.textContent = sequence.length;
+      setTimeout(playSequence, 500);
+    }
+
+    function onPick(color){
+      if (!accepting) return;
+      if (color === sequence[playerStep]){
+        playerStep++;
+        if (playerStep === sequence.length){
+          accepting = false;
+          status.textContent = 'Mantap! Lanjut level berikutnya ✨';
+          setTimeout(nextRound, 700);
+        }
+      } else {
+        accepting = false;
+        status.textContent = 'Wah kelewat! Level kamu: ' + sequence.length + '. Main lagi yuk!';
+        var retry = document.createElement('button');
+        retry.className = 'btn-primary';
+        retry.style.marginTop = '10px';
+        retry.textContent = 'Main Lagi';
+        retry.addEventListener('click', renderSimon);
+        cpPanelBody.appendChild(retry);
+      }
+    }
+
+    nextRound();
+  }
+
+  // ---- Game 10: Tebak Angka (1-20, dikasih hint lebih besar/kecil) ----
+  function renderGuessNumber(){
+    var target = 1 + Math.floor(Math.random() * 20);
+    var tries = 0;
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tebak Angka</p>' +
+      '<h3>Angka 1-20, Coba Tebak!</h3>' +
+      '<div style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;">' +
+        '<input type="number" id="guessInput" min="1" max="20" style="width:90px; padding:10px; border-radius:10px; border:2px solid var(--ink); text-align:center; font-size:1rem;">' +
+        '<button class="btn-primary" id="guessBtn">Tebak</button>' +
+      '</div>' +
+      '<p class="ttt-status" id="guessStatus">Percobaan ke: 0</p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var input = document.getElementById('guessInput');
+    var status = document.getElementById('guessStatus');
+
+    function submitGuess(){
+      var val = parseInt(input.value, 10);
+      if (!val || val < 1 || val > 20) return;
+      tries++;
+      if (val === target){
+        status.textContent = '🎉 Bener! Angkanya ' + target + '. Ketebak dalam ' + tries + ' kali coba!';
+        document.getElementById('guessBtn').disabled = true;
+        input.disabled = true;
+      } else if (val < target){
+        status.textContent = 'Kurang gede, coba lagi ⬆️ (percobaan ke-' + tries + ')';
+      } else {
+        status.textContent = 'Kelebihan, coba lagi ⬇️ (percobaan ke-' + tries + ')';
+      }
+    }
+    document.getElementById('guessBtn').addEventListener('click', submitGuess);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') submitGuess(); });
+  }
+
+  // ---- Game 11: Tebak Koin ----
+  function renderCoinFlip(){
+    var win = 0, total = 0;
+
+    function renderMain(){
+      cpPanelBody.innerHTML =
+        '<button class="menu-back" id="menuBack">← Kembali</button>' +
+        '<p class="eyebrow">Tebak Koin</p>' +
+        '<h3>Menang ' + win + '/' + total + '</h3>' +
+        '<div class="coin" id="coinEl">🪙</div>' +
+        '<div class="rps-row" style="margin-top:14px;">' +
+          '<button class="btn-primary" id="coinAngka">Angka</button>' +
+          '<button class="btn-primary" id="coinGambar">Gambar</button>' +
+        '</div>' +
+        '<p class="ttt-status" id="coinStatus">Pilih dulu, yuk!</p>';
+      document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+      document.getElementById('coinAngka').addEventListener('click', function(){ flip('angka'); });
+      document.getElementById('coinGambar').addEventListener('click', function(){ flip('gambar'); });
+    }
+
+    function flip(choice){
+      var coinEl = document.getElementById('coinEl');
+      var status = document.getElementById('coinStatus');
+      coinEl.classList.add('flipping');
+      setTimeout(function(){
+        coinEl.classList.remove('flipping');
+        var result = Math.random() < 0.5 ? 'angka' : 'gambar';
+        total++;
+        if (result === choice){ win++; status.textContent = 'Hasilnya ' + result + ' — Kamu Menang! 🎉'; }
+        else { status.textContent = 'Hasilnya ' + result + ' — Belum Beruntung!'; }
+        cpPanelBody.querySelector('h3').textContent = 'Menang ' + win + '/' + total;
+      }, 500);
+    }
+
+    renderMain();
+  }
+
+  // ---- Game 12: Uji Refleks ----
+  function renderReflexTest(){
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Uji Refleks</p>' +
+      '<h3>Tap Pas Kotaknya Ijo!</h3>' +
+      '<div class="reflex-box" id="reflexBox">Siap-siap...</div>' +
+      '<p class="ttt-status" id="reflexStatus">Klik kotaknya buat mulai</p>';
+    document.getElementById('menuBack').addEventListener('click', function(){
+      clearTimeout(waitTimer);
+      renderMiniGameMenu();
+    });
+
+    var box = document.getElementById('reflexBox');
+    var status = document.getElementById('reflexStatus');
+    var state = 'idle'; // idle -> waiting -> ready
+    var startTime = 0;
+    var waitTimer = null;
+
+    box.addEventListener('click', function(){
+      if (state === 'idle'){
+        state = 'waiting';
+        box.className = 'reflex-box waiting';
+        box.textContent = 'Tunggu...';
+        status.textContent = '';
+        var delay = 1000 + Math.random() * 2200;
+        waitTimer = setTimeout(function(){
+          state = 'ready';
+          box.className = 'reflex-box go';
+          box.textContent = 'TAP!';
+          startTime = Date.now();
+        }, delay);
+      } else if (state === 'waiting'){
+        clearTimeout(waitTimer);
+        state = 'idle';
+        box.className = 'reflex-box';
+        box.textContent = 'Kecepetan! Coba lagi';
+        status.textContent = 'Klik kotaknya buat mulai ulang';
+      } else if (state === 'ready'){
+        var reactTime = Date.now() - startTime;
+        state = 'idle';
+        box.className = 'reflex-box';
+        box.textContent = 'Klik buat coba lagi';
+        var label = reactTime < 250 ? 'Kilat! ⚡' : reactTime < 400 ? 'Cepet banget! 🔥' : reactTime < 600 ? 'Standar 👍' : 'Santai aja ya 😄';
+        status.textContent = 'Waktu reaksi kamu: ' + reactTime + 'ms — ' + label;
+      }
+    });
+  }
+
+  // ---- Game 13: Susun Huruf (tebak nama dari huruf acak) ----
+  function renderWordScramble(){
+    var names = ['CLEMIRA', 'KINZA', 'REZA', 'SOFI'];
+    var word = names[Math.floor(Math.random() * names.length)];
+    var scrambled = word.split('');
+    do {
+      for (var i = scrambled.length - 1; i > 0; i--){
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = scrambled[i]; scrambled[i] = scrambled[j]; scrambled[j] = tmp;
+      }
+    } while (scrambled.join('') === word && word.length > 1);
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Susun Huruf</p>' +
+      '<h3 style="letter-spacing:.3em;">' + scrambled.join(' ') + '</h3>' +
+      '<div style="display:flex; gap:8px; justify-content:center; margin:14px 0;">' +
+        '<input type="text" id="scrambleInput" placeholder="Jawaban kamu" style="flex:1; max-width:200px; padding:10px; border-radius:10px; border:2px solid var(--ink); text-align:center; font-size:1rem; text-transform:uppercase;">' +
+        '<button class="btn-primary" id="scrambleBtn">Cek</button>' +
+      '</div>' +
+      '<p class="ttt-status" id="scrambleStatus">Ini nama siapa hayo?</p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var input = document.getElementById('scrambleInput');
+    var status = document.getElementById('scrambleStatus');
+    var attempts = 0;
+
+    function check(){
+      var guess = input.value.trim().toUpperCase();
+      if (!guess) return;
+      attempts++;
+      if (guess === word){
+        status.textContent = '🎉 Bener! Jawabannya ' + word;
+        input.disabled = true;
+        document.getElementById('scrambleBtn').disabled = true;
+      } else if (attempts >= 3){
+        status.textContent = 'Jawabannya: ' + word + ' — coba lagi yuk!';
+        input.disabled = true;
+        document.getElementById('scrambleBtn').disabled = true;
+      } else {
+        status.textContent = 'Belum tepat, coba lagi (percobaan ke-' + attempts + '/3)';
+      }
+    }
+    document.getElementById('scrambleBtn').addEventListener('click', check);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') check(); });
+  }
+
+  // ---- Game 14: Tambah-tambahan (buat adik-adik) ----
+  function renderAddition(){
+    var a = 1 + Math.floor(Math.random() * 4);
+    var b = 1 + Math.floor(Math.random() * 4);
+    var correct = a + b;
+    var options = shuffleArr([correct, correct + 1, Math.max(1, correct - 1)]);
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tambah-tambahan</p>' +
+      '<h3 style="font-size:2rem;">' + a + ' + ' + b + ' = ?</h3>' +
+      '<div class="rps-row" id="addOpts" style="margin-top:14px;"></div>' +
+      '<p class="ttt-status" id="addStatus"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var opts = document.getElementById('addOpts');
+    var status = document.getElementById('addStatus');
+    options.forEach(function(n){
+      var btn = document.createElement('button');
+      btn.className = 'rps-btn';
+      btn.style.width = '52px'; btn.style.height = '52px'; btn.style.fontSize = '1.3rem';
+      btn.textContent = n;
+      btn.addEventListener('click', function(){
+        if (n === correct){
+          status.textContent = '🎉 Benar! ' + a + ' + ' + b + ' = ' + correct;
+          var next = document.createElement('button');
+          next.className = 'btn-primary'; next.style.marginTop = '10px';
+          next.textContent = 'Soal Berikutnya';
+          next.addEventListener('click', renderAddition);
+          cpPanelBody.appendChild(next);
+        } else {
+          status.textContent = 'Coba lagi ya! 😊';
+        }
+      });
+      opts.appendChild(btn);
+    });
+  }
+
+  function shuffleArr(arr){
+    for (var i = arr.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  // ---- Game 15: Hitung Gambar (buat adik-adik) ----
+  function renderCounting(){
+    var icons = ['⭐','🐣','🎈','🦋','🍎'];
+    var icon = icons[Math.floor(Math.random() * icons.length)];
+    var count = 3 + Math.floor(Math.random() * 6); // 3-8
+    var options = shuffleArr([count, count + 1, Math.max(1, count - 1)]);
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Hitung Gambar</p>' +
+      '<h3>Ada Berapa Ini?</h3>' +
+      '<p style="font-size:2rem; line-height:1.6; margin-bottom:14px;">' + icon.repeat(count) + '</p>' +
+      '<div class="rps-row" id="countOpts"></div>' +
+      '<p class="ttt-status" id="countStatus"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var opts = document.getElementById('countOpts');
+    var status = document.getElementById('countStatus');
+    options.forEach(function(n){
+      var btn = document.createElement('button');
+      btn.className = 'rps-btn';
+      btn.style.width = '52px'; btn.style.height = '52px'; btn.style.fontSize = '1.3rem';
+      btn.textContent = n;
+      btn.addEventListener('click', function(){
+        if (n === count){
+          status.textContent = '🎉 Benar! Ada ' + count + ' ' + icon;
+          var next = document.createElement('button');
+          next.className = 'btn-primary'; next.style.marginTop = '10px';
+          next.textContent = 'Soal Berikutnya';
+          next.addEventListener('click', renderCounting);
+          cpPanelBody.appendChild(next);
+        } else {
+          status.textContent = 'Hitung lagi yuk, pelan-pelan 😊';
+        }
+      });
+      opts.appendChild(btn);
+    });
+  }
+
+  // ---- Game 16: Tebak Warna (buat adik-adik) ----
+  function renderColorGuess(){
+    var colorList = [
+      { name:'Merah', hex:'#E85D5D' },
+      { name:'Kuning', hex:'#F0C64A' },
+      { name:'Hijau', hex:'#7EC98A' },
+      { name:'Biru', hex:'#4A90D9' },
+      { name:'Pink', hex:'#E8829E' },
+      { name:'Ungu', hex:'#A388D9' }
+    ];
+    var shuffledColors = shuffleArr(colorList.slice()).slice(0, 4);
+    var target = shuffledColors[Math.floor(Math.random() * shuffledColors.length)];
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Tebak Warna</p>' +
+      '<h3>Mana Warna <span style="color:' + target.hex + ';">' + target.name + '</span>?</h3>' +
+      '<div class="color-grid" id="colorGrid"></div>' +
+      '<p class="ttt-status" id="colorStatus"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var grid = document.getElementById('colorGrid');
+    var status = document.getElementById('colorStatus');
+    shuffleArr(shuffledColors.slice()).forEach(function(c){
+      var btn = document.createElement('button');
+      btn.className = 'color-swatch';
+      btn.style.background = c.hex;
+      btn.addEventListener('click', function(){
+        if (c.name === target.name){
+          status.textContent = '🎉 Benar! Itu warna ' + target.name;
+          var next = document.createElement('button');
+          next.className = 'btn-primary'; next.style.marginTop = '10px';
+          next.textContent = 'Soal Berikutnya';
+          next.addEventListener('click', renderColorGuess);
+          cpPanelBody.appendChild(next);
+        } else {
+          status.textContent = 'Bukan itu, coba lagi ya 😊';
+        }
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  // ---- Game 17: Urutan Angka (tap 1,2,3... berurutan) ----
+  function renderNumberOrder(){
+    var total = 6;
+    var numbers = shuffleArr([1,2,3,4,5,6].slice(0, total));
+    var nextExpected = 1;
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Urutan Angka</p>' +
+      '<h3>Tap Angka 1, 2, 3... Berurutan</h3>' +
+      '<div class="ttt-grid" id="orderGrid" style="max-width:210px;"></div>' +
+      '<p class="ttt-status" id="orderStatus">Ayo mulai dari angka 1!</p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var grid = document.getElementById('orderGrid');
+    var status = document.getElementById('orderStatus');
+    numbers.forEach(function(n){
+      var cell = document.createElement('button');
+      cell.className = 'ttt-cell';
+      cell.textContent = n;
+      cell.addEventListener('click', function(){
+        if (cell.classList.contains('matched')) return;
+        if (n === nextExpected){
+          cell.classList.add('matched');
+          cell.style.background = '#DCF0D8';
+          nextExpected++;
+          if (nextExpected > total){
+            status.textContent = '🎉 Yeay, berhasil urut semua!';
+            var next = document.createElement('button');
+            next.className = 'btn-primary'; next.style.marginTop = '10px';
+            next.textContent = 'Main Lagi';
+            next.addEventListener('click', renderNumberOrder);
+            cpPanelBody.appendChild(next);
+          } else {
+            status.textContent = 'Bagus! Sekarang cari angka ' + nextExpected;
+          }
+        } else {
+          status.textContent = 'Bukan itu, cari angka ' + nextExpected + ' dulu ya 😊';
+        }
+      });
+      grid.appendChild(cell);
+    });
+  }
+
+  // ---- Game: Lengkapi Kata (1 huruf hilang, pilih jawaban yang benar) ----
+  function renderWordFill(level){
+    level = level || 1;
+    var words = [
+      { word:'BUKU', icon:'📚' },
+      { word:'SAPU', icon:'🧹' },
+      { word:'KURSI', icon:'🪑' },
+      { word:'MOBIL', icon:'🚗' },
+      { word:'BOLA', icon:'⚽' },
+      { word:'TEKO', icon:'🫖' },
+      { word:'GELAS', icon:'🥛' },
+      { word:'IKAN', icon:'🐟' },
+      { word:'TOPI', icon:'🎩' },
+      { word:'JAM', icon:'⏰' },
+      { word:'PISANG', icon:'🍌' },
+      { word:'AYAM', icon:'🐔' },
+      { word:'RUMAH', icon:'🏠' },
+      { word:'PAYUNG', icon:'☂️' },
+      { word:'SEPATU', icon:'👟' },
+      { word:'KUCING', icon:'🐱' },
+      { word:'ANJING', icon:'🐶' },
+      { word:'PENSIL', icon:'✏️' }
+    ];
+    var pick = words[Math.floor(Math.random() * words.length)];
+    // level 1: huruf pertama yang hilang. level 2+: posisi acak
+    var missingIndex = level === 1 ? 0 : Math.floor(Math.random() * pick.word.length);
+    var correctLetter = pick.word[missingIndex];
+
+    // bikin 2 huruf pengecoh yang beda dari huruf benar
+    var allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    var distractors = shuffleArr(allLetters.filter(function(l){ return l !== correctLetter; })).slice(0, 2);
+    var options = shuffleArr([correctLetter].concat(distractors));
+
+    var boxesHtml = pick.word.split('').map(function(ch, i){
+      return '<span class="wordfill-box' + (i === missingIndex ? ' blank' : '') + '" id="wfBox' + i + '">' +
+             (i === missingIndex ? '' : ch) + '</span>';
+    }).join('');
+
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Lengkapi Kata — Level ' + level + '</p>' +
+      '<h3>Huruf Apa yang Hilang?</h3>' +
+      '<p style="font-size:3rem; margin-bottom:8px;">' + pick.icon + '</p>' +
+      '<div class="wordfill-row">' + boxesHtml + '</div>' +
+      '<div class="rps-row" id="wfOpts" style="margin-top:16px;"></div>' +
+      '<p class="ttt-status" id="wfStatus"></p>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+
+    var opts = document.getElementById('wfOpts');
+    var status = document.getElementById('wfStatus');
+    options.forEach(function(letter){
+      var btn = document.createElement('button');
+      btn.className = 'rps-btn';
+      btn.style.width = '52px'; btn.style.height = '52px'; btn.style.fontSize = '1.3rem';
+      btn.textContent = letter;
+      btn.addEventListener('click', function(){
+        if (letter === correctLetter){
+          document.getElementById('wfBox' + missingIndex).textContent = correctLetter;
+          document.getElementById('wfBox' + missingIndex).classList.remove('blank');
+          document.getElementById('wfBox' + missingIndex).classList.add('filled');
+          status.textContent = '🎉 Benar! Ini "' + pick.word + '"';
+          var next = document.createElement('button');
+          next.className = 'btn-primary'; next.style.marginTop = '10px';
+          next.textContent = 'Level ' + (level + 1) + ' →';
+          next.addEventListener('click', function(){ renderWordFill(level + 1); });
+          cpPanelBody.appendChild(next);
+        } else {
+          status.textContent = 'Coba lagi ya! 😊';
+        }
+      });
+      opts.appendChild(btn);
+    });
+  }
+
+  // ---- Game 18: Labirin (maze 7x7, cari jalan ke tujuan) ----
+  // ---- Labirin (halaman penuh, karakter Clemira & Kinza, background sama kayak jalan) ----
+  var COUPLE_SVG_SMALL =
+    '<svg viewBox="0 0 34 44" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">' +
+      '<g transform="translate(8,36) scale(1.18) translate(-8,-36)">' +
+        '<rect x="4" y="6" width="8" height="8" fill="#4A3F3B"/>' +
+        '<rect x="3" y="14" width="10" height="14" fill="#E8829E"/>' +
+        '<rect x="4" y="28" width="4" height="8" fill="#4A3F3B"/>' +
+        '<rect x="9" y="28" width="4" height="8" fill="#7a5b47"/>' +
+      '</g>' +
+      '<rect x="14" y="18" width="6" height="4" fill="#D9A967"/>' +
+      '<g>' +
+        '<rect x="21" y="4" width="8" height="8" fill="#4A3F3B"/>' +
+        '<rect x="20" y="12" width="10" height="16" fill="#4A90D9"/>' +
+        '<rect x="21" y="28" width="4" height="8" fill="#4A3F3B"/>' +
+        '<rect x="26" y="28" width="4" height="8" fill="#5E7857"/>' +
+      '</g>' +
+    '</svg>';
+
+  function openMazeScene(){
+    document.getElementById('mazeScene').classList.add('show');
+    startMaze();
+  }
+  function closeMazeScene(){
+    document.getElementById('mazeScene').classList.remove('show');
+  }
+
+  function startMaze(){
+    var N = 9;
+    var cells = [];
+    for (var r = 0; r < N; r++){
+      var row = [];
+      for (var c = 0; c < N; c++){
+        row.push({ top:true, right:true, bottom:true, left:true, visited:false });
+      }
+      cells.push(row);
+    }
+
+    function carve(r, c){
+      cells[r][c].visited = true;
+      var dirs = shuffleArr([
+        { dr:-1, dc:0, self:'top', other:'bottom' },
+        { dr:1, dc:0, self:'bottom', other:'top' },
+        { dr:0, dc:-1, self:'left', other:'right' },
+        { dr:0, dc:1, self:'right', other:'left' }
+      ]);
+      dirs.forEach(function(d){
+        var nr = r + d.dr, nc = c + d.dc;
+        if (nr >= 0 && nr < N && nc >= 0 && nc < N && !cells[nr][nc].visited){
+          cells[r][c][d.self] = false;
+          cells[nr][nc][d.other] = false;
+          carve(nr, nc);
+        }
+      });
+    }
+    carve(0, 0);
+
+    var playerR = 0, playerC = 0;
+    var goalR = N - 1, goalC = N - 1;
+
+    var grid = document.getElementById('mazeGridBig');
+    var status = document.getElementById('mazeStatusBig');
+    status.textContent = 'Ayo cari jalan keluarnya!';
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+    var cellEls = [];
+
+    for (var r2 = 0; r2 < N; r2++){
+      var rowEls = [];
+      for (var c2 = 0; c2 < N; c2++){
+        var el = document.createElement('div');
+        el.className = 'maze-cell-big';
+        var cell = cells[r2][c2];
+        if (cell.top) el.style.borderTop = '3px solid var(--ink)';
+        if (cell.right) el.style.borderRight = '3px solid var(--ink)';
+        if (cell.bottom) el.style.borderBottom = '3px solid var(--ink)';
+        if (cell.left) el.style.borderLeft = '3px solid var(--ink)';
+        grid.appendChild(el);
+        rowEls.push(el);
+      }
+      cellEls.push(rowEls);
+    }
+    cellEls[goalR][goalC].innerHTML = '<span style="font-size:1.3rem;">💝</span>';
+
+    function renderPlayer(){
+      cellEls.forEach(function(row, r3){ row.forEach(function(el, c3){
+        if (!(r3 === goalR && c3 === goalC)) el.innerHTML = '';
+      }); });
+      if (playerR === goalR && playerC === goalC){
+        cellEls[playerR][playerC].innerHTML = '<span style="font-size:1.3rem;">🎉</span>';
+      } else {
+        cellEls[playerR][playerC].innerHTML = COUPLE_SVG_SMALL;
+      }
+    }
+    renderPlayer();
+
+    function tryMove(dir){
+      var cell = cells[playerR][playerC];
+      if (dir === 'up' && !cell.top){ playerR--; }
+      else if (dir === 'down' && !cell.bottom){ playerR++; }
+      else if (dir === 'left' && !cell.left){ playerC--; }
+      else if (dir === 'right' && !cell.right){ playerC++; }
+      else { status.textContent = 'Ada dinding, coba arah lain ya 😊'; return; }
+      renderPlayer();
+      if (playerR === goalR && playerC === goalC){
+        status.textContent = '🎉 Sampai tujuan! Clemira & Kinza berhasil!';
+        document.getElementById('mazeRetryBtn').classList.add('show');
+      } else {
+        status.textContent = 'Terus jalan, kalian pasti bisa!';
+      }
+    }
+
+    document.querySelectorAll('.maze-btn-big').forEach(function(btn){
+      btn.onclick = function(){ tryMove(btn.dataset.d); };
+    });
+    document.getElementById('mazeRetryBtn').classList.remove('show');
+  }
+
+  // ---- Labirin, dirender langsung ke dalam kartu seperti game lainnya ----
+  var COUPLE_SVG_SMALL =
+    '<svg viewBox="0 0 34 44" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">' +
+      '<g transform="translate(8,36) scale(1.18) translate(-8,-36)">' +
+        '<rect x="4" y="6" width="8" height="8" fill="#4A3F3B"/>' +
+        '<rect x="3" y="14" width="10" height="14" fill="#E8829E"/>' +
+        '<rect x="4" y="28" width="4" height="8" fill="#4A3F3B"/>' +
+        '<rect x="9" y="28" width="4" height="8" fill="#7a5b47"/>' +
+      '</g>' +
+      '<rect x="14" y="18" width="6" height="4" fill="#D9A967"/>' +
+      '<g>' +
+        '<rect x="21" y="4" width="8" height="8" fill="#4A3F3B"/>' +
+        '<rect x="20" y="12" width="10" height="16" fill="#4A90D9"/>' +
+        '<rect x="21" y="28" width="4" height="8" fill="#4A3F3B"/>' +
+        '<rect x="26" y="28" width="4" height="8" fill="#5E7857"/>' +
+      '</g>' +
+    '</svg>';
+
+  function renderMazeGame(){
+    cpPanelBody.innerHTML =
+      '<button class="menu-back" id="menuBack">← Kembali</button>' +
+      '<p class="eyebrow">Labirin</p>' +
+      '<h3>Cari Jalan Sampai ke 💝</h3>' +
+      '<div class="maze-grid-big" id="mazeGridBig"></div>' +
+      '<div class="maze-controls-big">' +
+        '<div></div><button class="maze-btn-big" data-d="up">↑</button><div></div>' +
+        '<button class="maze-btn-big" data-d="left">←</button>' +
+        '<button class="maze-btn-big" data-d="down">↓</button>' +
+        '<button class="maze-btn-big" data-d="right">→</button>' +
+      '</div>' +
+      '<p class="maze-status-big" id="mazeStatusBig"></p>' +
+      '<button class="btn-primary maze-retry-btn" id="mazeRetryBtn">Main Lagi</button>';
+    document.getElementById('menuBack').addEventListener('click', renderMiniGameMenu);
+    startMaze();
+  }
+
+  renderMiniGameMenu();
+})();
+</script>
+
+</body>
+</html>
